@@ -55,22 +55,33 @@ public readonly partial record struct NetRangeV4 : INetRange< NetRangeV4 >
 
     // --- Interface-Methoden ---
 
-    // HIER IST DIE NEUE IMPLEMENTIERUNG:
-    public bool Contains ( IPAddress ipAddress )
+    public bool Contains(IPAddress ipAddress)
     {
-        // Wir konvertieren die zu prüfende IP in eine Zahl...
-        var ipUInt = ToUInt32 ( ipAddress );
-
-        // ...und prüfen, ob sie im Bereich liegt.
+        var ipUInt = ToUInt32(ipAddress);
         return ipUInt >= _networkAddressUInt && ipUInt <= _broadcastAddressUInt;
     }
 
-    public bool OverlapsWith ( NetRangeV4 other ) => throw new NotImplementedException();
-    public bool IsSubnetOf ( NetRangeV4 other ) => throw new NotImplementedException();
-    public bool IsSupernetOf ( NetRangeV4 other ) => other.IsSubnetOf ( this );
-    public IEnumerable< NetRangeV4 > GetSubnets ( int newPrefix ) => throw new NotImplementedException();
-    public int CompareTo ( NetRangeV4 other ) => throw new NotImplementedException();
-    public bool Equals ( NetRangeV4 other ) => CidrPrefix == other.CidrPrefix && _networkAddressUInt == other._networkAddressUInt;
+
+    // NEUE IMPLEMENTIERUNG 1:
+    public bool OverlapsWith(NetRangeV4 other)
+    {
+        // Zwei Bereiche überschneiden sich, wenn der Anfang des einen VOR dem Ende des anderen liegt
+        // UND das Ende des einen NACH dem Anfang des anderen liegt.
+        return _networkAddressUInt <= other._broadcastAddressUInt && _broadcastAddressUInt >= other._networkAddressUInt;
+    }
+
+    // NEUE IMPLEMENTIERUNG 2:
+    public bool IsSubnetOf(NetRangeV4 other)
+    {
+        // Ein Bereich ist ein Subnetz, wenn sein Anfang größer/gleich dem Anfang des anderen ist
+        // UND sein Ende kleiner/gleich dem Ende des anderen ist.
+        return _networkAddressUInt >= other._networkAddressUInt && _broadcastAddressUInt <= other._broadcastAddressUInt;
+    }
+
+    public bool IsSupernetOf(NetRangeV4 other) => other.IsSubnetOf(this);
+    public IEnumerable<NetRangeV4> GetSubnets(int newPrefix) => throw new NotImplementedException();
+    public int CompareTo(NetRangeV4 other) => throw new NotImplementedException();
+    public bool Equals(NetRangeV4 other) => CidrPrefix == other.CidrPrefix && _networkAddressUInt == other._networkAddressUInt;
 }
 
 // --- Plattformspezifische Implementierung für GetHashCode ---
