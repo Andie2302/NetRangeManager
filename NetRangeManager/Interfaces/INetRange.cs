@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Numerics;
 
-namespace NetRangeManager;
+namespace NetRangeManager.Interfaces;
 
 /// <summary>
 /// Definiert einen allgemeinen Vertrag für einen IP-Adressbereich (sowohl IPv4 als auch IPv6).
