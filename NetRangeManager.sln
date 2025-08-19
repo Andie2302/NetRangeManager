@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetRangeManager", "NetRangeManager\NetRangeManager.csproj", "{6CEBEB93-8AE4-467D-A7D3-B37B66A63BE2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo", "Demo\Demo.csproj", "{66B572C1-FF9F-4894-88DE-D8665A87BE16}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTest.csproj", "{694B4967-E988-44DC-B73F-30E38DEB1295}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{6CEBEB93-8AE4-467D-A7D3-B37B66A63BE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6CEBEB93-8AE4-467D-A7D3-B37B66A63BE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6CEBEB93-8AE4-467D-A7D3-B37B66A63BE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66B572C1-FF9F-4894-88DE-D8665A87BE16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66B572C1-FF9F-4894-88DE-D8665A87BE16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66B572C1-FF9F-4894-88DE-D8665A87BE16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66B572C1-FF9F-4894-88DE-D8665A87BE16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{694B4967-E988-44DC-B73F-30E38DEB1295}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{694B4967-E988-44DC-B73F-30E38DEB1295}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{694B4967-E988-44DC-B73F-30E38DEB1295}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{694B4967-E988-44DC-B73F-30E38DEB1295}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
