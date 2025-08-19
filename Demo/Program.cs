@@ -110,5 +110,5 @@ var subnetze = netzwerkZumAufteilen.GetSubnets(26);
 
 foreach (var subnetz in subnetze)
 {
-    Console.WriteLine($"- {subnetz} (Erste IP: {subnetz.FirstUsableAddress}, Letzte IP: {ToIpAddress(subnetz.BroadcastAddressUInt - 1)})");
+    Console.WriteLine($"- {subnetz} (Erste IP: {subnetz.FirstUsableAddress}, Letzte IP: {subnetz.LastUsableAddress})");
 }
