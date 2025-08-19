@@ -9,7 +9,8 @@ public readonly partial record struct NetRangeV4 : INetRange< NetRangeV4 >
 {
     // --- Private Felder ---
     private readonly uint _networkAddressUInt;
-    private readonly uint _broadcastAddressUInt;
+    public readonly uint BroadcastAddressUInt;
+    private readonly IPAddress _lastUsableAddress;
 
     // --- Konstruktor ---
     public NetRangeV4 ( string cidr )
@@ -20,9 +21,23 @@ public readonly partial record struct NetRangeV4 : INetRange< NetRangeV4 >
         var ipUInt = ToUInt32 ( ip );
         var mask = CidrPrefix == 0 ? 0u : 0xFFFFFFFFu << 32 - CidrPrefix;
         _networkAddressUInt = ipUInt & mask;
-        _broadcastAddressUInt = _networkAddressUInt | ~mask;
+        BroadcastAddressUInt = _networkAddressUInt | ~mask;
         NetworkAddress = ToIpAddress ( _networkAddressUInt );
         TotalAddresses = BigInteger.Pow ( 2 , 32 - CidrPrefix );
+        IsHost = CidrPrefix == 32;
+    }
+
+    public NetRangeV4(IPAddress ip, int prefix)
+    {
+        CidrPrefix = prefix;
+        var ipUInt = ToUInt32(ip);
+        var mask = CidrPrefix == 0 ? 0u : 0xFFFFFFFFu << 32 - CidrPrefix;
+
+        _networkAddressUInt = ipUInt & mask;
+        BroadcastAddressUInt = _networkAddressUInt | ~mask;
+
+        NetworkAddress = ToIpAddress(_networkAddressUInt);
+        TotalAddresses = BigInteger.Pow(2, 32 - CidrPrefix);
         IsHost = CidrPrefix == 32;
     }
 
@@ -36,7 +51,7 @@ public readonly partial record struct NetRangeV4 : INetRange< NetRangeV4 >
         return BitConverter.ToUInt32 ( bytes , 0 );
     }
 
-    private static IPAddress ToIpAddress ( uint addressValue )
+    public static IPAddress ToIpAddress ( uint addressValue )
     {
         var bytes = BitConverter.GetBytes ( addressValue );
 
@@ -49,7 +64,8 @@ public readonly partial record struct NetRangeV4 : INetRange< NetRangeV4 >
     public IPAddress NetworkAddress { get; }
     public int CidrPrefix { get; }
     public IPAddress FirstUsableAddress => CidrPrefix >= 31 ? NetworkAddress : ToIpAddress ( _networkAddressUInt + 1 );
-    public IPAddress LastAddressInRange => ToIpAddress ( _broadcastAddressUInt );
+    public IPAddress LastUsableAddress => _lastUsableAddress;
+    public IPAddress LastAddressInRange => ToIpAddress ( BroadcastAddressUInt );
     public BigInteger TotalAddresses { get; }
     public bool IsHost { get; }
 
@@ -58,7 +74,7 @@ public readonly partial record struct NetRangeV4 : INetRange< NetRangeV4 >
     public bool Contains(IPAddress ipAddress)
     {
         var ipUInt = ToUInt32(ipAddress);
-        return ipUInt >= _networkAddressUInt && ipUInt <= _broadcastAddressUInt;
+        return ipUInt >= _networkAddressUInt && ipUInt <= BroadcastAddressUInt;
     }
 
 
@@ -67,7 +83,7 @@ public readonly partial record struct NetRangeV4 : INetRange< NetRangeV4 >
     {
         // Zwei Bereiche überschneiden sich, wenn der Anfang des einen VOR dem Ende des anderen liegt
         // UND das Ende des einen NACH dem Anfang des anderen liegt.
-        return _networkAddressUInt <= other._broadcastAddressUInt && _broadcastAddressUInt >= other._networkAddressUInt;
+        return _networkAddressUInt <= other.BroadcastAddressUInt && BroadcastAddressUInt >= other._networkAddressUInt;
     }
 
     // NEUE IMPLEMENTIERUNG 2:
@@ -75,13 +91,47 @@ public readonly partial record struct NetRangeV4 : INetRange< NetRangeV4 >
     {
         // Ein Bereich ist ein Subnetz, wenn sein Anfang größer/gleich dem Anfang des anderen ist
         // UND sein Ende kleiner/gleich dem Ende des anderen ist.
-        return _networkAddressUInt >= other._networkAddressUInt && _broadcastAddressUInt <= other._broadcastAddressUInt;
+        return _networkAddressUInt >= other._networkAddressUInt && BroadcastAddressUInt <= other.BroadcastAddressUInt;
     }
 
     public bool IsSupernetOf(NetRangeV4 other) => other.IsSubnetOf(this);
-    public IEnumerable<NetRangeV4> GetSubnets(int newPrefix) => throw new NotImplementedException();
-    public int CompareTo(NetRangeV4 other) => throw new NotImplementedException();
+    public IEnumerable<NetRangeV4> GetSubnets(int newPrefix)
+    {
+        // Validierung: Das neue Präfix muss größer (also das Netz kleiner) sein.
+        if (newPrefix <= CidrPrefix || newPrefix > 32)
+        {
+            throw new ArgumentOutOfRangeException(nameof(newPrefix), $"Neues Präfix muss größer als {CidrPrefix} und kleiner/gleich 32 sein.");
+        }
+
+        // Die Größe (Anzahl der Adressen) eines einzelnen neuen Subnetzes.
+        var subnetSize = 1u << 32 - newPrefix;
+
+        // Die letzte mögliche Adresse in unserem ursprünglichen Bereich.
+        var lastAddress = BroadcastAddressUInt;
+
+        // Wir starten beim Anfang unseres aktuellen Netzes.
+        var currentAddress = _networkAddressUInt;
+
+        while (currentAddress <= lastAddress)
+        {
+            // Erzeuge ein neues NetRangeV4-Objekt für das aktuelle Subnetz.
+            yield return new NetRangeV4(ToIpAddress(currentAddress), newPrefix);
+
+            // Springe zum Anfang des nächsten Subnetzes.
+            currentAddress += subnetSize;
+        }
+    }    public int CompareTo(NetRangeV4 other)
+    {
+        // Vergleiche zuerst die numerischen Werte der Netzwerkadressen.
+        var networkComparison = _networkAddressUInt.CompareTo(other._networkAddressUInt);
+
+        // Wenn die Netzwerkadressen gleich sind, ist das Netz mit dem
+        // GRÖSSEREN Präfix (also das kleinere Netz) "größer" in der Sortierung.
+        // Das ist eine gängige Konvention.
+        return networkComparison == 0 ? CidrPrefix.CompareTo(other.CidrPrefix) : networkComparison;
+    }
     public bool Equals(NetRangeV4 other) => CidrPrefix == other.CidrPrefix && _networkAddressUInt == other._networkAddressUInt;
+    public override string ToString() => $"{NetworkAddress}/{CidrPrefix}";
 }
 
 // --- Plattformspezifische Implementierung für GetHashCode ---
