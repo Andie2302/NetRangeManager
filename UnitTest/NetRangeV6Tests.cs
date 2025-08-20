@@ -4,7 +4,7 @@ using NetRangeManager.Models;
 
 namespace UnitTest;
 
-public class NetRangeV6Tests
+public partial class NetRangeV6Tests
 {
     [Fact]
     public void Constructor_ShouldCalculatePropertiesCorrectly()
