@@ -19,9 +19,13 @@ public readonly partial record struct NetRangeV6 : INetRange<NetRangeV6>
             throw new ArgumentException("Ungültige IPv6 CIDR-Notation.", nameof(cidr));
         }
     }
-
     public NetRangeV6(IPAddress ip, int prefix)
     {
+        // --- Defensive Prüfungen ---
+        if (ip is null)
+        {
+            throw new ArgumentNullException(nameof(ip));
+        }
         if (ip.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6)
         {
             throw new ArgumentException("Nur IPv6-Adressen werden unterstützt.", nameof(ip));
@@ -30,6 +34,7 @@ public readonly partial record struct NetRangeV6 : INetRange<NetRangeV6>
         {
             throw new ArgumentOutOfRangeException(nameof(prefix), "Präfix für IPv6 muss zwischen 0 und 128 liegen.");
         }
+        // --- Ende der Prüfungen ---
 
         CidrPrefix = prefix;
 
@@ -44,7 +49,6 @@ public readonly partial record struct NetRangeV6 : INetRange<NetRangeV6>
         TotalAddresses = BigInteger.Pow(2, 128 - CidrPrefix);
         IsHost = CidrPrefix == 128;
     }
-
     // --- Private Hilfsmethoden ---
     private static BigInteger ToBigInteger(IPAddress ipAddress)
     {

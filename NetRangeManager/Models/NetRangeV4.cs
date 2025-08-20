@@ -22,14 +22,30 @@ public readonly partial record struct NetRangeV4 : INetRange<NetRangeV4>
 
     public NetRangeV4(IPAddress ip, int prefix)
     {
-        // ... (Dieser Teil ist korrekt und bleibt unverändert)
+        // --- Defensive Prüfungen ---
+        if (ip is null)
+        {
+            throw new ArgumentNullException(nameof(ip));
+        }
+        if (ip.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork)
+        {
+            throw new ArgumentException("Nur IPv4-Adressen werden unterstützt.", nameof(ip));
+        }
+        if (prefix is < 0 or > 32)
+        {
+            throw new ArgumentOutOfRangeException(nameof(prefix), "Präfix für IPv4 muss zwischen 0 und 32 liegen.");
+        }
+        // --- Ende der Prüfungen ---
+
         CidrPrefix = prefix;
         var ipUInt = ToUInt32(ip);
-        var mask = CidrPrefix == 0 ? 0u : 0xFFFFFFFFu << 32 - prefix;
+        var mask = CidrPrefix == 0 ? 0u : 0xFFFFFFFFu << 32 - CidrPrefix;
+    
         _networkAddressUInt = ipUInt & mask;
         _broadcastAddressUInt = _networkAddressUInt | ~mask;
+
         NetworkAddress = ToIpAddress(_networkAddressUInt);
-        TotalAddresses = BigInteger.Pow(2, 32 - CidrPrefix);
+        TotalAddresses = BigInteger.Pow(2, 32 - CidrPrefix); 
         IsHost = CidrPrefix == 32;
     }
 
