@@ -10,7 +10,7 @@ public readonly partial record struct NetRangeV6 : INetRange<NetRangeV6>
     private readonly BigInteger _networkAddressBigInt;
     private readonly BigInteger _lastAddressBigInt;
 
-    // --- Konstruktor ---
+    // --- Konstruktoren ---
     public NetRangeV6(string cidr)
     {
         var parts = cidr.Split('/');
@@ -18,74 +18,108 @@ public readonly partial record struct NetRangeV6 : INetRange<NetRangeV6>
         {
             throw new ArgumentException("Ungültige IPv6 CIDR-Notation.", nameof(cidr));
         }
+        // Validiere die IP-Adresse und das Präfix im zweiten Konstruktor
+        this = new NetRangeV6(ip, prefix);
+    }
+
+    public NetRangeV6(IPAddress ip, int prefix)
+    {
+        if (ip.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6)
+        {
+            throw new ArgumentException("Nur IPv6-Adressen werden unterstützt.", nameof(ip));
+        }
+        if (prefix is < 0 or > 128)
+        {
+            throw new ArgumentOutOfRangeException(nameof(prefix), "Präfix für IPv6 muss zwischen 0 und 128 liegen.");
+        }
 
         CidrPrefix = prefix;
 
-        // Konvertiere die IP in einen BigInteger.
         var ipBigInt = ToBigInteger(ip);
-
-        // Berechne die 128-Bit-Maske.
         var mask = CidrPrefix == 0 ? BigInteger.Zero : (BigInteger.One << 128 - CidrPrefix) - 1;
         mask = ~mask;
 
-        // Berechne die erste und letzte Adresse des Bereichs.
         _networkAddressBigInt = ipBigInt & mask;
         _lastAddressBigInt = _networkAddressBigInt | ~mask;
 
-        // Fülle die öffentlichen Eigenschaften.
         NetworkAddress = ToIpAddress(_networkAddressBigInt);
         TotalAddresses = BigInteger.Pow(2, 128 - CidrPrefix);
         IsHost = CidrPrefix == 128;
     }
-    
+
     // --- Private Hilfsmethoden ---
     private static BigInteger ToBigInteger(IPAddress ipAddress)
     {
         var bytes = ipAddress.GetAddressBytes();
-        // BigInteger erwartet Little-Endian, GetAddressBytes liefert Big-Endian.
-        if (BitConverter.IsLittleEndian)
-        {
-            Array.Reverse(bytes);
-        }
-        // Das extra Null-Byte am Ende stellt sicher, dass die Zahl als positiv interpretiert wird.
+        if (BitConverter.IsLittleEndian) { Array.Reverse(bytes); }
         return new BigInteger(bytes.Concat(new byte[] { 0 }).ToArray());
     }
 
     private static IPAddress ToIpAddress(BigInteger addressValue)
     {
         var bytes = addressValue.ToByteArray();
-        var ipBytes = new byte[16]; // IPv6 hat 16 Bytes
-        
-        // Kopiere die Bytes und fülle bei Bedarf mit Nullen auf.
+        var ipBytes = new byte[16];
         var bytesToCopy = Math.Min(bytes.Length, 16);
         Array.Copy(bytes, ipBytes, bytesToCopy);
-
-        if (BitConverter.IsLittleEndian)
-        {
-            Array.Reverse(ipBytes);
-        }
+        if (BitConverter.IsLittleEndian) { Array.Reverse(ipBytes); }
         return new IPAddress(ipBytes);
     }
-
 
     // --- Öffentliche Eigenschaften ---
     public IPAddress NetworkAddress { get; }
     public int CidrPrefix { get; }
-    public IPAddress FirstUsableAddress => NetworkAddress; // Bei IPv6 gibt es kein Konzept wie bei v4
-    public IPAddress LastUsableAddress => LastAddressInRange;  // Dito
+    public IPAddress FirstUsableAddress => NetworkAddress;
+    public IPAddress LastUsableAddress => LastAddressInRange;
     public IPAddress LastAddressInRange => ToIpAddress(_lastAddressBigInt);
     public BigInteger TotalAddresses { get; }
     public bool IsHost { get; }
 
-    // --- Interface-Methoden (noch nicht implementiert) ---
-    public bool Contains(IPAddress ipAddress) => throw new NotImplementedException();
-    public bool OverlapsWith(NetRangeV6 other) => throw new NotImplementedException();
-    public bool IsSubnetOf(NetRangeV6 other) => throw new NotImplementedException();
+    // --- Interface-Methoden ---
+    public bool Contains(IPAddress ipAddress)
+    {
+        var ipBigInt = ToBigInteger(ipAddress);
+        return ipBigInt >= _networkAddressBigInt && ipBigInt <= _lastAddressBigInt;
+    }
+
+    public bool OverlapsWith(NetRangeV6 other)
+    {
+        return _networkAddressBigInt <= other._lastAddressBigInt && _lastAddressBigInt >= other._networkAddressBigInt;
+    }
+
+    public bool IsSubnetOf(NetRangeV6 other)
+    {
+        return _networkAddressBigInt >= other._networkAddressBigInt && _lastAddressBigInt <= other._lastAddressBigInt;
+    }
+
     public bool IsSupernetOf(NetRangeV6 other) => other.IsSubnetOf(this);
-    public IEnumerable<NetRangeV6> GetSubnets(int newPrefix) => throw new NotImplementedException();
-    public int CompareTo(NetRangeV6 other) => throw new NotImplementedException();
+
+    public IEnumerable<NetRangeV6> GetSubnets(int newPrefix)
+    {
+        if (newPrefix <= CidrPrefix || newPrefix > 128)
+        {
+            throw new ArgumentOutOfRangeException(nameof(newPrefix), $"Neues Präfix muss größer als {CidrPrefix} und kleiner/gleich 128 sein.");
+        }
+        
+        var subnetSize = BigInteger.Pow(2, 128 - newPrefix);
+        var lastAddress = _lastAddressBigInt;
+        var currentAddress = _networkAddressBigInt;
+
+        while (currentAddress <= lastAddress)
+        {
+            yield return new NetRangeV6(ToIpAddress(currentAddress), newPrefix);
+            if (currentAddress > BigInteger.Pow(2, 128) - subnetSize) break; // Überlaufschutz
+            currentAddress += subnetSize;
+        }
+    }
+
+    public int CompareTo(NetRangeV6 other)
+    {
+        var networkComparison = _networkAddressBigInt.CompareTo(other._networkAddressBigInt);
+        return networkComparison == 0 ? CidrPrefix.CompareTo(other.CidrPrefix) : networkComparison;
+    }
     
     public bool Equals(NetRangeV6 other) => CidrPrefix == other.CidrPrefix && _networkAddressBigInt.Equals(other._networkAddressBigInt);
+    
     public override string ToString() => $"{NetworkAddress}/{CidrPrefix}";
 }
 
