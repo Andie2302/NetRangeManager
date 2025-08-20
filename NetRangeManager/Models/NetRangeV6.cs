@@ -63,38 +63,33 @@ public readonly partial record struct NetRangeV6 : INetRange< NetRangeV6 >
     /// <summary>
     /// Converts an IPAddress to its BigInteger representation.
     /// </summary>
-    private static BigInteger ToBigInteger ( IPAddress? ipAddress )
+    private static BigInteger ToBigInteger ( IPAddress ipAddress )
     {
         var bytes = ipAddress.GetAddressBytes();
 
-        if ( bytes.Length != 16 ) { throw new ArgumentException ( "IPv6 address must have exactly 16 bytes." ); }
-
-        // BigInteger constructor expects little-endian bytes.
-        // IPAddress.GetAddressBytes returns big-endian.
+        // BigInteger erwartet Little-Endian, GetAddressBytes gibt Big-Endian zurück
         if ( BitConverter.IsLittleEndian ) { Array.Reverse ( bytes ); }
 
-        // BigInteger is signed, so add a trailing zero byte for positive values.
-        var bytesWithPadding = new byte[ bytes.Length + 1 ];
-        bytes.CopyTo ( bytesWithPadding , 0 );
-
-        return new BigInteger ( bytesWithPadding );
+        // Wichtig: BigInteger als positive Zahl erstellen, indem ein Null-Byte angehängt wird
+        return new BigInteger ( bytes.Concat ( new byte[] { 0 } ).ToArray() );
     }
 
     /// <summary>
     /// Converts a BigInteger to its IPAddress representation.
     /// </summary>
-    private static IPAddress? ToIpAddress ( BigInteger addressValue )
+    private static IPAddress ToIpAddress ( BigInteger addressValue )
     {
         if ( addressValue < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( addressValue ) , "IPv6 address cannot be negative." ); }
 
         var bytes = addressValue.ToByteArray();
-        var ipBytes = new byte[ 16 ];
+        var ipBytes = new byte[ 16 ]; // IPv6 hat 16 Bytes
 
-        // Copy bytes from BigInteger result, minding the padding byte if present.
+        // Kopiere die Bytes. Wenn die Zahl kleiner ist, werden die restlichen Bytes zu 0.
+        // Wenn die Zahl größer ist (durch das angehängte Null-Byte), wird das letzte Byte ignoriert.
         var bytesToCopy = Math.Min ( bytes.Length , 16 );
-        Array.Copy ( bytes , 0 , ipBytes , 0 , bytesToCopy );
+        Array.Copy ( bytes , ipBytes , bytesToCopy );
 
-        // Convert back to big-endian for IPAddress.
+        // Zurück zu Big-Endian für die IPAddress-Klasse
         if ( BitConverter.IsLittleEndian ) { Array.Reverse ( ipBytes ); }
 
         return new IPAddress ( ipBytes );
