@@ -49,4 +49,31 @@ public class NetRangeV4Tests2
         // ASSERT
         Assert.Equal(expectedResult, actualResult);
     }
+    
+    [Theory]
+    [InlineData("10.0.0.0/16", "10.0.10.0/24", true, true, true)]       // Szenario 1: Subnetz liegt komplett innerhalb
+    [InlineData("10.0.10.0/24", "10.0.0.0/16", true, false, false)]      // Szenario 2: Umgekehrt, Supernetz
+    [InlineData("10.0.0.0/16", "10.0.255.0/24", true, true, true)]       // Szenario 3: Subnetz liegt am Rand, aber noch drin
+    [InlineData("10.0.0.0/23", "10.0.1.128/25", true, true, true)]       // Szenario 4: Ein weiteres klares Subnetz
+    [InlineData("192.168.1.0/24", "192.168.2.0/24", false, false, false)]// Szenario 5: Komplett getrennte Netze
+    [InlineData("172.16.0.0/24", "172.16.0.128/25", true, true, true)]   // Szenario 6: Ein Subnetz
+    public void RelationshipTests_ShouldReturnExpectedResults(
+        string rangeA_Cidr, string rangeB_Cidr,
+        bool shouldOverlap, bool bShouldBeSubnetOfA, bool aShouldBeSupernetOfB)
+    {
+        // ARRANGE
+        var rangeA = new NetRangeV4(rangeA_Cidr);
+        var rangeB = new NetRangeV4(rangeB_Cidr);
+
+        // ACT
+        var actualOverlap = rangeA.OverlapsWith(rangeB);
+        var actualIsSubnet = rangeB.IsSubnetOf(rangeA);
+        var actualIsSupernet = rangeA.IsSupernetOf(rangeB);
+
+        // ASSERT
+        Assert.Equal(shouldOverlap, actualOverlap);
+        Assert.Equal(bShouldBeSubnetOfA, actualIsSubnet);
+        Assert.Equal(aShouldBeSupernetOfB, actualIsSupernet);
+    }
+    
 }
