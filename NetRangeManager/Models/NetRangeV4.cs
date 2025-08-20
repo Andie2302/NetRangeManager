@@ -147,7 +147,7 @@ public readonly partial record struct NetRangeV4 : INetRange<NetRangeV4>
     /// <summary>
     /// Gibt an, ob es sich um einen privaten IP-Bereich nach RFC 1918 handelt.
     /// </summary>
-    public bool IsPrivateRange => IsRFC1918Private();
+    public bool IsPrivateRange => IsRfc1918Private();
 
     /// <summary>
     /// Gibt an, ob es sich um eine Loopback-Adresse handelt (127.0.0.0/8).
@@ -281,8 +281,11 @@ public readonly partial record struct NetRangeV4 : INetRange<NetRangeV4>
             return false;
         }
 
-        var parts = cidr.Split('/');
-        if (parts.Length != 2)
+        var parts = cidr?.Split('/');
+        if (parts is not
+            {
+                Length: 2
+            })
         {
             return false;
         }
@@ -310,7 +313,7 @@ public readonly partial record struct NetRangeV4 : INetRange<NetRangeV4>
     }
 
     // --- Private Hilfsmethoden ---
-    private bool IsRFC1918Private()
+    private bool IsRfc1918Private()
     {
         // 10.0.0.0/8
         if ((_networkAddressUInt & 0xFF000000u) == 0x0A000000u)

@@ -47,12 +47,12 @@ public readonly partial record struct NetRangeV6 : INetRange<NetRangeV6>
         if(ip is null) {
             throw new ArgumentNullException(nameof(ip));
         }
-        
+
         if (ip.AddressFamily != AddressFamily.InterNetworkV6)
         {
             throw new ArgumentException("Nur IPv6-Adressen werden unterstützt.", nameof(ip));
         }
-        
+
         if (prefix is < 0 or > 128)
         {
             throw new ArgumentOutOfRangeException(nameof(prefix), prefix,
@@ -62,20 +62,22 @@ public readonly partial record struct NetRangeV6 : INetRange<NetRangeV6>
         // --- Berechnung ---
         CidrPrefix = prefix;
         var ipBigInt = ToBigInteger(ip);
-        
+
         // Maske berechnen - Vorsicht bei Edge Cases
         BigInteger mask;
         if (prefix == 0)
         {
             mask = BigInteger.Zero;
         }
-        else if (prefix == 128)
-        {
-            mask = (BigInteger.One << 128) - 1;
-        }
-        else
-        {
-            mask = (BigInteger.One << 128) - 1 & ~((BigInteger.One << 128 - prefix) - 1);
+        else {
+            if (prefix == 128)
+            {
+                mask = (BigInteger.One << 128) - 1;
+            }
+            else
+            {
+                mask = (BigInteger.One << 128) - 1 & ~((BigInteger.One << 128 - prefix) - 1);
+            }
         }
 
         _networkAddressBigInt = ipBigInt & mask;
@@ -90,22 +92,22 @@ public readonly partial record struct NetRangeV6 : INetRange<NetRangeV6>
     private static BigInteger ToBigInteger(IPAddress ipAddress)
     {
         var bytes = ipAddress.GetAddressBytes();
-        
+
         // Sicherstellen, dass wir 16 Bytes haben
         if (bytes.Length != 16)
         {
             throw new ArgumentException("IPv6-Adresse muss genau 16 Bytes haben.");
         }
-        
+
         if (BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
-        
+
         // Null-Byte hinzufügen um sicherzustellen, dass BigInteger als positiv interpretiert wird
         var bytesWithPadding = new byte[bytes.Length + 1];
         bytes.CopyTo(bytesWithPadding, 0);
-        
+
         return new BigInteger(bytesWithPadding);
     }
 
@@ -341,8 +343,11 @@ public readonly partial record struct NetRangeV6 : INetRange<NetRangeV6>
             return false;
         }
 
-        var parts = cidr.Split('/');
-        if (parts.Length != 2)
+        var parts = cidr?.Split('/');
+        if (parts is not
+            {
+                Length: 2
+            })
         {
             return false;
         }
