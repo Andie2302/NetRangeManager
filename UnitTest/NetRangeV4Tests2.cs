@@ -10,7 +10,7 @@ public class NetRangeV4Tests2
     {
         // ... (dein bestehender, erfolgreicher Test)
         // ARRANGE
-        var cidr = "192.168.1.0/24";
+        const string cidr = "192.168.1.0/24";
         var expectedNetworkAddress = IPAddress.Parse("192.168.1.0");
         var expectedFirstUsable = IPAddress.Parse("192.168.1.1");
         var expectedLastUsable = IPAddress.Parse("192.168.1.254");

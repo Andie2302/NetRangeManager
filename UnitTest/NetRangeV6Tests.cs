@@ -10,7 +10,7 @@ public class NetRangeV6Tests
     public void Constructor_ShouldCalculatePropertiesCorrectly()
     {
         // ARRANGE
-        var cidr = "2001:db8:acad::/48";
+        const string cidr = "2001:db8:acad::/48";
         var expectedNetworkAddress = IPAddress.Parse("2001:db8:acad::");
         var expectedLastAddress = IPAddress.Parse("2001:db8:acad:ffff:ffff:ffff:ffff:ffff");
         var expectedTotalAddresses = BigInteger.Pow(2, 128 - 48);

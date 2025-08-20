@@ -9,7 +9,7 @@ public partial class NetRangeV4Tests // Wir benennen die Klasse um, damit klar i
     public void Constructor_ShouldCalculatePropertiesCorrectly_ForClassC()
     {
         // ARRANGE: Wir bereiten alles vor, was wir für den Test brauchen.
-        var cidr = "192.168.1.0/24";
+        const string cidr = "192.168.1.0/24";
         var expectedNetworkAddress = IPAddress.Parse("192.168.1.0");
         var expectedFirstUsable = IPAddress.Parse("192.168.1.1");
         var expectedLastUsable = IPAddress.Parse("192.168.1.254");
