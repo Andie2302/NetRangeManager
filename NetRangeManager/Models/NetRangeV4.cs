@@ -78,7 +78,9 @@ public readonly partial record struct NetRangeV4 : INetRange< NetRangeV4 >
     public bool Contains ( IPAddress ipAddress )
     {
         // --- Defensive Programmierung ---
-        if ( ipAddress is null ) throw new ArgumentNullException ( nameof ( ipAddress ) );
+        if ( ipAddress is null ) {
+            throw new ArgumentNullException ( nameof ( ipAddress ) );
+        }
 
         if ( ipAddress.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork ) {
             // Wir geben false zurück, anstatt eine Exception zu werfen.
