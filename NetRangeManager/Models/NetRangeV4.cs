@@ -316,24 +316,16 @@ public readonly partial record struct NetRangeV4 : INetRange<NetRangeV4>
     private bool IsRfc1918Private()
     {
         // 10.0.0.0/8
-        if ((_networkAddressUInt & 0xFF000000u) == 0x0A000000u)
-        {
-            return true;
-        }
+        if ( ( _networkAddressUInt & 0xFF000000u ) == 0x0A000000u ) { return true; }
 
-        // 172.16.0.0/12
-        if ((_networkAddressUInt & 0xFFF00000u) == 0xAC100000u)
-        {
-            return true;
-        }
+        if ( ( _networkAddressUInt & 0xFFF00000u ) == 0xAC100000u ) { return true; }
 
         // 192.168.0.0/16
-        if ((_networkAddressUInt & 0xFFFF0000u) == 0xC0A80000u)
-        {
-            return true;
-        }
+        if ( ( _networkAddressUInt & 0xFFFF0000u ) == 0xC0A80000u ) { return true; }
 
         return false;
+
+        // 172.16.0.0/12
     }
 }
 
