@@ -35,7 +35,7 @@ public readonly partial record struct NetRangeV6 : INetRange< NetRangeV6 >
     /// <exception cref="ArgumentNullException">Thrown if ip is null.</exception>
     /// <exception cref="ArgumentException">Thrown if the provided IP address is not an IPv6 address.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if the prefix is not between 0 and 128.</exception>
-    public NetRangeV6 ( IPAddress ip , int prefix )
+    public NetRangeV6 ( IPAddress? ip , int prefix )
     {
         if ( ip is null ) { throw new ArgumentNullException ( nameof ( ip ) ); }
 
@@ -63,7 +63,7 @@ public readonly partial record struct NetRangeV6 : INetRange< NetRangeV6 >
     /// <summary>
     /// Converts an IPAddress to its BigInteger representation.
     /// </summary>
-    private static BigInteger ToBigInteger ( IPAddress ipAddress )
+    private static BigInteger ToBigInteger ( IPAddress? ipAddress )
     {
         var bytes = ipAddress.GetAddressBytes();
 
@@ -83,7 +83,7 @@ public readonly partial record struct NetRangeV6 : INetRange< NetRangeV6 >
     /// <summary>
     /// Converts a BigInteger to its IPAddress representation.
     /// </summary>
-    private static IPAddress ToIpAddress ( BigInteger addressValue )
+    private static IPAddress? ToIpAddress ( BigInteger addressValue )
     {
         if ( addressValue < 0 ) { throw new ArgumentOutOfRangeException ( nameof ( addressValue ) , "IPv6 address cannot be negative." ); }
 
@@ -101,15 +101,15 @@ public readonly partial record struct NetRangeV6 : INetRange< NetRangeV6 >
     }
 
     /// <inheritdoc />
-    public IPAddress NetworkAddress { get; }
+    public IPAddress? NetworkAddress { get; }
     /// <inheritdoc />
     public int CidrPrefix { get; }
     /// <inheritdoc />
-    public IPAddress FirstUsableAddress => NetworkAddress;
+    public IPAddress? FirstUsableAddress => NetworkAddress;
     /// <inheritdoc />
-    public IPAddress LastUsableAddress => LastAddressInRange;
+    public IPAddress? LastUsableAddress => LastAddressInRange;
     /// <inheritdoc />
-    public IPAddress LastAddressInRange => ToIpAddress ( _lastAddressBigInt );
+    public IPAddress? LastAddressInRange => ToIpAddress ( _lastAddressBigInt );
     /// <inheritdoc />
     public BigInteger TotalAddresses { get; }
     /// <inheritdoc />
@@ -144,7 +144,7 @@ public readonly partial record struct NetRangeV6 : INetRange< NetRangeV6 >
     }
 
     /// <inheritdoc />
-    public bool Contains ( IPAddress ipAddress )
+    public bool Contains ( IPAddress? ipAddress )
     {
         if ( ipAddress is null ) { throw new ArgumentNullException ( nameof ( ipAddress ) ); }
 

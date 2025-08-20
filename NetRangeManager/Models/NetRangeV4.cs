@@ -40,7 +40,7 @@ public readonly partial record struct NetRangeV4 : INetRange<NetRangeV4>
     /// <exception cref="ArgumentNullException">Thrown if ip is null.</exception>
     /// <exception cref="ArgumentException">Thrown if the provided IP address is not an IPv4 address.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if the prefix is not between 0 and 32.</exception>
-    public NetRangeV4(IPAddress ip, int prefix)
+    public NetRangeV4(IPAddress? ip, int prefix)
     {
         if (ip is null) { throw new ArgumentNullException(nameof(ip)); }
 
@@ -69,7 +69,7 @@ public readonly partial record struct NetRangeV4 : INetRange<NetRangeV4>
     /// <summary>
     /// Converts an IPAddress to its 32-bit unsigned integer representation.
     /// </summary>
-    private static uint ToUInt32(IPAddress ipAddress)
+    private static uint ToUInt32(IPAddress? ipAddress)
     {
         var bytes = ipAddress.GetAddressBytes();
         if (BitConverter.IsLittleEndian) { Array.Reverse(bytes); }
@@ -79,7 +79,7 @@ public readonly partial record struct NetRangeV4 : INetRange<NetRangeV4>
     /// <summary>
     /// Converts a 32-bit unsigned integer to its IPAddress representation.
     /// </summary>
-    private static IPAddress ToIpAddress(uint addressValue)
+    private static IPAddress? ToIpAddress(uint addressValue)
     {
         var bytes = BitConverter.GetBytes(addressValue);
         if (BitConverter.IsLittleEndian) { Array.Reverse(bytes); }
@@ -87,19 +87,19 @@ public readonly partial record struct NetRangeV4 : INetRange<NetRangeV4>
     }
 
     /// <inheritdoc />
-    public IPAddress NetworkAddress { get; }
+    public IPAddress? NetworkAddress { get; }
 
     /// <inheritdoc />
     public int CidrPrefix { get; }
 
     /// <inheritdoc />
-    public IPAddress FirstUsableAddress => _firstUsableAddressCache ?? NetworkAddress;
+    public IPAddress? FirstUsableAddress => _firstUsableAddressCache ?? NetworkAddress;
 
     /// <inheritdoc />
-    public IPAddress LastUsableAddress => _lastUsableAddressCache ?? NetworkAddress;
+    public IPAddress? LastUsableAddress => _lastUsableAddressCache ?? NetworkAddress;
 
     /// <inheritdoc />
-    public IPAddress LastAddressInRange => ToIpAddress(_broadcastAddressUInt);
+    public IPAddress? LastAddressInRange => ToIpAddress(_broadcastAddressUInt);
 
     /// <inheritdoc />
     public BigInteger TotalAddresses { get; }
@@ -118,7 +118,7 @@ public readonly partial record struct NetRangeV4 : INetRange<NetRangeV4>
     public bool IsLoopback => (_networkAddressUInt & 0xFF000000u) == 0x7F000000u;
 
     /// <inheritdoc />
-    public bool Contains(IPAddress ipAddress)
+    public bool Contains(IPAddress? ipAddress)
     {
         if (ipAddress is null) { throw new ArgumentNullException(nameof(ipAddress)); }
 

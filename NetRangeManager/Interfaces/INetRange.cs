@@ -12,7 +12,7 @@ public interface INetRange<TNetRange> : IComparable<TNetRange>, IEquatable<TNetR
     /// <summary>
     /// Gets the network address of the range.
     /// </summary>
-    IPAddress NetworkAddress { get; }
+    IPAddress? NetworkAddress { get; }
 
     /// <summary>
     /// Gets the CIDR prefix length of the network range.
@@ -22,17 +22,17 @@ public interface INetRange<TNetRange> : IComparable<TNetRange>, IEquatable<TNetR
     /// <summary>
     /// Gets the first usable IP address in the network range.
     /// </summary>
-    IPAddress FirstUsableAddress { get; }
+    IPAddress? FirstUsableAddress { get; }
 
     /// <summary>
     /// Gets the last usable IP address in the network range.
     /// </summary>
-    IPAddress LastUsableAddress { get; }
+    IPAddress? LastUsableAddress { get; }
 
     /// <summary>
     /// Gets the last address in the network range (e.g., the broadcast address for IPv4).
     /// </summary>
-    IPAddress LastAddressInRange { get; }
+    IPAddress? LastAddressInRange { get; }
 
     /// <summary>
     /// Gets the total number of IP addresses in this network range.
@@ -49,7 +49,7 @@ public interface INetRange<TNetRange> : IComparable<TNetRange>, IEquatable<TNetR
     /// </summary>
     /// <param name="ipAddress">The IP address to check.</param>
     /// <returns>True if the IP address is contained in the range; otherwise, false.</returns>
-    bool Contains(IPAddress ipAddress);
+    bool Contains(IPAddress? ipAddress);
 
     /// <summary>
     /// Determines whether this network range overlaps with another network range.
