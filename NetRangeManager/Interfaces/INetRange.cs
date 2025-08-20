@@ -7,7 +7,7 @@ namespace NetRangeManager.Interfaces;
 /// Definiert einen allgemeinen Vertrag für einen IP-Adressbereich (sowohl IPv4 als auch IPv6).
 /// </summary>
 /// <typeparam name="TNetRange">Der konkrete Typ des IP-Bereichs, der dieses Interface implementiert.</typeparam>
-public interface INetRange<TNetRange> : IComparable<TNetRange>, IEquatable<TNetRange> 
+public interface INetRange<TNetRange> : IComparable<TNetRange>, IEquatable<TNetRange>
     where TNetRange : INetRange<TNetRange>
 {
     /// <summary>
