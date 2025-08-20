@@ -40,15 +40,15 @@ public class NetRangeEdgeCaseTests
     [ Fact ]
     public void EdgeCase_Point2PointNetworks_WorkCorrectly()
     {
-        var p2p = new NetRangeV4 ( "192.168.1.0/31" );
-        Assert.Equal ( 31 , p2p.CidrPrefix );
-        Assert.Equal ( 2 , (int) p2p.TotalAddresses );
-        Assert.False ( p2p.IsHost );
-        Assert.Equal ( p2p.NetworkAddress , p2p.FirstUsableAddress );
-        Assert.Equal ( p2p.NetworkAddress , p2p.LastUsableAddress );
-        Assert.True ( p2p.Contains ( IPAddress.Parse ( "192.168.1.0" ) ) );
-        Assert.True ( p2p.Contains ( IPAddress.Parse ( "192.168.1.1" ) ) );
-        Assert.False ( p2p.Contains ( IPAddress.Parse ( "192.168.1.2" ) ) );
+        var p2P = new NetRangeV4 ( "192.168.1.0/31" );
+        Assert.Equal ( 31 , p2P.CidrPrefix );
+        Assert.Equal ( 2 , (int) p2P.TotalAddresses );
+        Assert.False ( p2P.IsHost );
+        Assert.Equal ( p2P.NetworkAddress , p2P.FirstUsableAddress );
+        Assert.Equal ( p2P.NetworkAddress , p2P.LastUsableAddress );
+        Assert.True ( p2P.Contains ( IPAddress.Parse ( "192.168.1.0" ) ) );
+        Assert.True ( p2P.Contains ( IPAddress.Parse ( "192.168.1.1" ) ) );
+        Assert.False ( p2P.Contains ( IPAddress.Parse ( "192.168.1.2" ) ) );
     }
 
     [ Fact ]

@@ -44,7 +44,7 @@ Console.WriteLine();
 Console.WriteLine("------------------------------------");
 Console.WriteLine("Testing CompareTo() by sorting:");
 Console.WriteLine();
-var ranges = new List<NetRangeV4> { new("192.168.1.128/25"), new("10.0.0.0/8"), new("192.168.1.0/24"), new("10.0.0.0/16") };
+var ranges = new List<NetRangeV4> { new NetRangeV4 ("192.168.1.128/25"), new NetRangeV4 ("10.0.0.0/8"), new NetRangeV4 ("192.168.1.0/24"), new NetRangeV4 ("10.0.0.0/16") };
 Console.WriteLine("Unsorted list:");
 
 foreach (var range in ranges) { Console.WriteLine($"- {range}"); }
@@ -91,7 +91,7 @@ Console.WriteLine($"Is '{ipv6Network}' a supernet of '{ipv6Subnet}'? ---> {ipv6N
 Console.WriteLine($"Does '{ipv6Network}' overlap with '{ipv6Separate}'? ---> {ipv6Network.OverlapsWith(ipv6Separate)}");
 Console.WriteLine();
 Console.WriteLine("Testing CompareTo() by sorting an IPv6 list:");
-var ipv6Ranges = new List<NetRangeV6> { new("2001:db8:2::/48"), new("2001:db8:1::/48"), new("2001:db8:1:1::/64"), new("2001:db8:1::/56") };
+var ipv6Ranges = new List<NetRangeV6> { new NetRangeV6 ("2001:db8:2::/48"), new NetRangeV6 ("2001:db8:1::/48"), new NetRangeV6 ("2001:db8:1:1::/64"), new NetRangeV6 ("2001:db8:1::/56") };
 ipv6Ranges.Sort();
 Console.WriteLine("Sorted IPv6 list:");
 
