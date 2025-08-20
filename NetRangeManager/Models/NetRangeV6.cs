@@ -117,9 +117,9 @@ public readonly partial record struct NetRangeV6 : INetRange<NetRangeV6>
         var networkComparison = _networkAddressBigInt.CompareTo(other._networkAddressBigInt);
         return networkComparison == 0 ? CidrPrefix.CompareTo(other.CidrPrefix) : networkComparison;
     }
-    
+
     public bool Equals(NetRangeV6 other) => CidrPrefix == other.CidrPrefix && _networkAddressBigInt.Equals(other._networkAddressBigInt);
-    
+
     public override string ToString() => $"{NetworkAddress}/{CidrPrefix}";
 }
 

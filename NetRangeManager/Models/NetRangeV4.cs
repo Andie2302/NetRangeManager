@@ -14,13 +14,11 @@ public readonly partial record struct NetRangeV4 : INetRange<NetRangeV4>
     // --- Konstruktoren ---
     public NetRangeV4(string cidr)
     {
-        // ... (Dieser Teil ist korrekt und bleibt unverändert)
-        var parts = cidr.Split('/');
-        if (!IPAddress.TryParse(parts[0], out var ip) || !int.TryParse(parts[1], out var prefix))
+        // Wir benutzen jetzt unsere neue, sichere TryParse-Methode.
+        if (!TryParse(cidr, out this))
         {
             throw new ArgumentException("Ungültige CIDR-Notation.", nameof(cidr));
         }
-        this = new NetRangeV4(ip, prefix);
     }
 
     public NetRangeV4(IPAddress ip, int prefix)
@@ -103,6 +101,40 @@ public readonly partial record struct NetRangeV4 : INetRange<NetRangeV4>
     public bool Equals(NetRangeV4 other) => CidrPrefix == other.CidrPrefix && _networkAddressUInt == other._networkAddressUInt;
 
     public override string ToString() => $"{NetworkAddress}/{CidrPrefix}";
+
+    public static bool TryParse(string? cidr, out NetRangeV4 result)
+    {
+        result = default;
+        if (string.IsNullOrWhiteSpace(cidr))
+        {
+            return false;
+        }
+
+        var parts = cidr?.Split('/');
+        if (parts is not
+            {
+                Length: 2
+            })
+        {
+            return false;
+        }
+
+        if (!IPAddress.TryParse(parts[0], out var ip) || ip.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork)
+        {
+            return false;
+        }
+
+        if (!int.TryParse(parts[1], out var prefix))
+        {
+            return false;
+        }
+
+        // Wir können jetzt sicher sein, dass die Eingabe gültig ist.
+        result = new NetRangeV4(ip, prefix);
+        return true;
+    }
+
+
 }
 
 // --- Plattformspezifische Implementierung für GetHashCode ---
@@ -124,5 +156,6 @@ public readonly partial record struct NetRangeV4
             return hashCode;
         }
     }
+
 }
 #endif

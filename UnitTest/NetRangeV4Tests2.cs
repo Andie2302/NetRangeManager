@@ -28,7 +28,7 @@ public class NetRangeV4Tests2
         Assert.Equal(256, range.TotalAddresses);
         Assert.False(range.IsHost);
     }
-    
+
     // HIER IST DER NEUE TEST:
     [Theory] // Sagt xUnit, dass dies eine parametrisierte Testmethode ist.
     [InlineData("192.168.1.150", true)]  // Fall 1: IP ist mitten im Bereich
@@ -49,7 +49,7 @@ public class NetRangeV4Tests2
         // ASSERT
         Assert.Equal(expectedResult, actualResult);
     }
-    
+
     [Theory]
     [InlineData("10.0.0.0/16", "10.0.10.0/24", true, true, true)]       // Szenario 1: Subnetz liegt komplett innerhalb
     [InlineData("10.0.10.0/24", "10.0.0.0/16", true, false, false)]      // Szenario 2: Umgekehrt, Supernetz
@@ -58,12 +58,12 @@ public class NetRangeV4Tests2
     [InlineData("192.168.1.0/24", "192.168.2.0/24", false, false, false)]// Szenario 5: Komplett getrennte Netze
     [InlineData("172.16.0.0/24", "172.16.0.128/25", true, true, true)]   // Szenario 6: Ein Subnetz
     public void RelationshipTests_ShouldReturnExpectedResults(
-        string rangeA_Cidr, string rangeB_Cidr,
+        string rangeACidr, string rangeBCidr,
         bool shouldOverlap, bool bShouldBeSubnetOfA, bool aShouldBeSupernetOfB)
     {
         // ARRANGE
-        var rangeA = new NetRangeV4(rangeA_Cidr);
-        var rangeB = new NetRangeV4(rangeB_Cidr);
+        var rangeA = new NetRangeV4(rangeACidr);
+        var rangeB = new NetRangeV4(rangeBCidr);
 
         // ACT
         var actualOverlap = rangeA.OverlapsWith(rangeB);
@@ -75,5 +75,5 @@ public class NetRangeV4Tests2
         Assert.Equal(bShouldBeSubnetOfA, actualIsSubnet);
         Assert.Equal(aShouldBeSupernetOfB, actualIsSupernet);
     }
-    
+
 }

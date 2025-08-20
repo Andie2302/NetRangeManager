@@ -49,12 +49,12 @@ public class NetRangeV6Tests
     [InlineData("2001:db8:acad::/48", "2001:db8::/32", true, false, false)] // Supernetz
     [InlineData("2001:db8::/32", "2001:db9::/32", false, false, false)] // Getrennt
     public void RelationshipTests_ShouldReturnExpectedResults(
-        string rangeA_Cidr, string rangeB_Cidr,
+        string rangeACidr, string rangeBCidr,
         bool shouldOverlap, bool bShouldBeSubnetOfA, bool aShouldBeSupernetOfB)
     {
         // ARRANGE
-        var rangeA = new NetRangeV6(rangeA_Cidr);
-        var rangeB = new NetRangeV6(rangeB_Cidr);
+        var rangeA = new NetRangeV6(rangeACidr);
+        var rangeB = new NetRangeV6(rangeBCidr);
 
         // ACT
         var actualOverlap = rangeA.OverlapsWith(rangeB);
