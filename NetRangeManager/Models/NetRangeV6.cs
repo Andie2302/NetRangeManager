@@ -13,13 +13,11 @@ public readonly partial record struct NetRangeV6 : INetRange<NetRangeV6>
     // --- Konstruktoren ---
     public NetRangeV6(string cidr)
     {
-        var parts = cidr.Split('/');
-        if (!IPAddress.TryParse(parts[0], out var ip) || !int.TryParse(parts[1], out var prefix))
+        // Wir benutzen jetzt unsere neue, sichere TryParse-Methode.
+        if (!TryParse(cidr, out this))
         {
             throw new ArgumentException("Ungültige IPv6 CIDR-Notation.", nameof(cidr));
         }
-        // Validiere die IP-Adresse und das Präfix im zweiten Konstruktor
-        this = new NetRangeV6(ip, prefix);
     }
 
     public NetRangeV6(IPAddress ip, int prefix)
@@ -99,7 +97,7 @@ public readonly partial record struct NetRangeV6 : INetRange<NetRangeV6>
         {
             throw new ArgumentOutOfRangeException(nameof(newPrefix), $"Neues Präfix muss größer als {CidrPrefix} und kleiner/gleich 128 sein.");
         }
-        
+
         var subnetSize = BigInteger.Pow(2, 128 - newPrefix);
         var lastAddress = _lastAddressBigInt;
         var currentAddress = _networkAddressBigInt;
@@ -107,7 +105,10 @@ public readonly partial record struct NetRangeV6 : INetRange<NetRangeV6>
         while (currentAddress <= lastAddress)
         {
             yield return new NetRangeV6(ToIpAddress(currentAddress), newPrefix);
-            if (currentAddress > BigInteger.Pow(2, 128) - subnetSize) break; // Überlaufschutz
+            if (currentAddress > BigInteger.Pow(2, 128) - subnetSize) {
+                break; // Überlaufschutz
+            }
+
             currentAddress += subnetSize;
         }
     }
@@ -121,6 +122,40 @@ public readonly partial record struct NetRangeV6 : INetRange<NetRangeV6>
     public bool Equals(NetRangeV6 other) => CidrPrefix == other.CidrPrefix && _networkAddressBigInt.Equals(other._networkAddressBigInt);
 
     public override string ToString() => $"{NetworkAddress}/{CidrPrefix}";
+
+    // --- NEUE STATIC TRYPARSE-METHODE ---
+    public static bool TryParse(string? cidr, out NetRangeV6 result)
+    {
+        result = default;
+        if (string.IsNullOrWhiteSpace(cidr))
+        {
+            return false;
+        }
+
+        var parts = cidr?.Split('/');
+        if (parts is not
+            {
+                Length: 2
+            })
+        {
+            return false;
+        }
+
+        if (!IPAddress.TryParse(parts[0], out var ip) || ip.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6)
+        {
+            return false;
+        }
+
+        if (!int.TryParse(parts[1], out var prefix))
+        {
+            return false;
+        }
+
+        // Wir können jetzt sicher sein, dass die Eingabe gültig ist.
+        result = new NetRangeV6(ip, prefix);
+        return true;
+    }
+
 }
 
 // --- Plattformspezifische Implementierung für GetHashCode ---
