@@ -14,7 +14,6 @@ public readonly partial record struct NetRangeV4 : INetRange<NetRangeV4>
     // --- Konstruktoren ---
     public NetRangeV4(string cidr)
     {
-        // Wir benutzen jetzt unsere neue, sichere TryParse-Methode.
         if (!TryParse(cidr, out this))
         {
             throw new ArgumentException("Ungültige CIDR-Notation.", nameof(cidr));
